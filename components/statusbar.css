@@ -1,0 +1,146 @@
+.ultron-status{
+	position: fixed;
+	left: 25px;
+	bottom: 25px;
+	z-index: 99999;
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	padding: 10px 18px;
+	min-width: 250px;
+	height: 55px;
+	background: rgba(8, 28, 49, 0.82);
+	backdrop-filter: blur(18px);
+	border: 1px solid rgba(82, 171, 230, 0.42);
+	border-radius: 12px;
+	box-shadow: 0 0 22px rgba(22, 105, 171, 0.22), inset 0 0 18px rgba(36, 121, 184, 0.1);
+	overflow: hidden;
+	font-family: "Orbitron", monospace;
+}
+
+/* glowing border */
+
+.ultron-status::before{
+
+content:"";
+
+position:absolute;
+
+inset:0;
+
+border-radius:14px;
+
+padding:1px;
+
+background:linear-gradient(90deg, #236ba0, #72d1ff, #236ba0);
+
+-webkit-mask:
+linear-gradient(#fff 0 0) content-box,
+linear-gradient(#fff 0 0);
+
+-webkit-mask-composite:xor;
+
+mask-composite:exclude;
+
+pointer-events:none;
+
+}
+
+/* Blue status indicator */
+
+.status-light{
+
+width:16px;
+height:16px;
+
+border-radius:50%;
+
+background:#63c6ff;
+
+box-shadow:
+0 0 8px #63c6ff,
+0 0 18px #238bd0,
+0 0 28px #155a91;
+
+flex-shrink:0;
+
+}
+
+/* text */
+
+.status-text{
+
+color:#b9e5ff;
+
+font-size:13px;
+
+font-weight:700;
+
+letter-spacing:2px;
+
+text-shadow: 0 0 8px rgba(99, 198, 255, 0.5);
+
+white-space:nowrap;
+
+}
+
+/* bottom lines */
+
+.status-lines{
+
+margin-left:auto;
+
+display:flex;
+
+gap:4px;
+
+align-items:center;
+
+}
+
+.status-lines span{
+
+width:10px;
+height:3px;
+
+background:#55baff;
+
+border-radius:2px;
+
+box-shadow: 0 0 6px #55baff;
+
+opacity:.9;
+
+}
+
+/* breathing glow */
+
+.ultron-status{ animation: statusGlow 3s ease-in-out infinite; }
+
+@keyframes statusGlow{
+
+0%{
+
+box-shadow:
+0 0 15px rgba(35, 133, 205, .18),
+inset 0 0 15px rgba(53, 153, 220, .07);
+
+}
+
+50%{
+
+box-shadow:
+0 0 26px rgba(35, 133, 205, .34),
+inset 0 0 18px rgba(53, 153, 220, .12);
+
+}
+
+100%{
+
+box-shadow:
+0 0 15px rgba(35, 133, 205, .18),
+inset 0 0 15px rgba(53, 153, 220, .07);
+
+}
+
+}

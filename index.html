@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#071426">
+  <meta name="description" content="Bumblebee voice-enabled AI assistant">
+  <title>Bumblebee</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./bumblebee-icon.svg" type="image/svg+xml">
+  <style>
+    :root{color-scheme:dark;--bg:#06101d;--panel:#0b1b2d;--panel-2:#10263d;--line:#1b3a58;--blue:#55baff;--blue-2:#1e79b5;--text:#e4f2fc;--muted:#91aabd;--danger:#ff7188}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 60% -15%,#123452 0,transparent 48%),var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+    button,input{font:inherit}button{color:inherit}.shell{display:grid;grid-template-columns:270px minmax(0,1fr);min-height:100dvh;max-width:1440px;margin:auto}
+    .sidebar{position:sticky;top:0;height:100dvh;padding:20px 14px;border-right:1px solid var(--line);background:rgba(5,15,27,.82);backdrop-filter:blur(20px);display:flex;flex-direction:column;z-index:5}
+    .brand{display:flex;align-items:center;gap:11px;padding:4px 8px 20px;font-weight:750;letter-spacing:.08em}.brand-mark{display:grid;width:38px;height:38px;place-items:center;border:1px solid #2c668e;border-radius:12px;background:linear-gradient(145deg,#16436a,#0b2035);color:#8dd7ff;font-size:20px}
+    .new-chat,.side-link,.icon-button,.action,.send,.mic,.save-setting{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);border-radius:8px;background:#0e2237;color:#cae8fa;cursor:pointer;transition:background .16s,border-color .16s}.new-chat{width:100%;min-height:42px;justify-content:flex-start;padding:0 12px}.new-chat:hover,.side-link:hover,.action:hover,.icon-button:hover{background:#153651;border-color:#347aa9}
+    .history-label{margin:23px 8px 8px;color:var(--muted);font-size:10px;font-weight:750;letter-spacing:.16em}.history-list{overflow:auto;display:grid;gap:5px}.history-item{width:100%;padding:10px;text-align:left;border:1px solid transparent;border-radius:7px;background:transparent;color:#d8eafa;cursor:pointer;touch-action:pan-y;user-select:none}.history-item:hover,.history-item.active{border-color:#1b4567;background:#0f2840}.history-title{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}.history-time{display:block;margin-top:4px;color:#7895ad;font-size:10px}
+    .main{min-width:0;display:grid;grid-template-rows:auto 1fr auto;min-height:100dvh}.topbar{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:10px;padding:14px 22px;border-bottom:1px solid rgba(55,101,139,.24);background:rgba(6,16,29,.78);backdrop-filter:blur(18px)}.mobile-brand{display:none;align-items:center;gap:8px;font-weight:700}.top-spacer{flex:1}.status{color:#82badb;font-size:12px}.icon-button{width:38px;height:38px;font-size:18px}.content{width:min(850px,100%);margin:auto;padding:36px 26px 24px}.welcome{margin:2vh auto 34px;text-align:center}.orb{position:relative;width:90px;height:90px;margin:0 auto 20px;border:1px solid #317dae;border-radius:50%;box-shadow:0 0 45px #17669b66,inset 0 0 24px #18689d66;animation:float 4s ease-in-out infinite}.orb:before,.orb:after{content:"";position:absolute;inset:12px;border:1px solid #4ab1eb;border-radius:50%;transform:rotateX(68deg) rotateZ(25deg)}.orb:after{inset:22px;transform:rotateX(68deg) rotateZ(-35deg);border-color:#245b84}.core{position:absolute;inset:35px;border-radius:50%;background:#bdeaff;box-shadow:0 0 20px #5bc2ff}.welcome h1{margin:0 0 5px;font-size:clamp(25px,5vw,38px);letter-spacing:.02em}.welcome p{margin:0;color:var(--muted)}
+    .messages{display:grid;gap:15px}.message{max-width:84%;padding:13px 15px;border:1px solid #173b5b;border-radius:12px;background:#0c2034;white-space:pre-wrap;overflow-wrap:anywhere}.message.user{justify-self:end;border-color:#226494;background:#103251}.message.assistant{justify-self:start}.message-label{display:block;margin-bottom:4px;color:#77caff;font-size:10px;font-weight:700;letter-spacing:.12em}.thinking{color:#8bcfff}
+    .composer-wrap{position:sticky;bottom:0;padding:12px max(18px,env(safe-area-inset-right)) max(16px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left));background:linear-gradient(transparent,rgba(6,16,29,.96) 24%)}.subtitle{display:none;width:min(850px,100%);margin:0 auto 9px;padding:10px 12px;border:1px solid #24547b;border-radius:8px;background:#0b2035;color:#d9f0ff;font-size:13px}.subtitle.visible{display:block}.subtitle-label{display:block;margin-bottom:4px;color:var(--blue);font-size:10px;font-weight:700;letter-spacing:.12em}.composer{display:flex;align-items:center;gap:8px;width:min(850px,100%);margin:auto;padding:8px;border:1px solid #204866;border-radius:12px;background:#0b1d30;box-shadow:0 14px 45px #0006}.composer:focus-within{border-color:#3c98d0;box-shadow:0 0 0 3px #216c9a33,0 14px 45px #0006}.composer input{flex:1;min-width:0;padding:10px 8px;border:0;outline:0;background:transparent;color:var(--text)}.composer input::placeholder{color:#7692a9}.action,.mic,.send{flex:0 0 auto;width:40px;height:40px}.mic{color:#a9dcf7}.mic.active{border-color:#59bbfa;background:#154c72;box-shadow:0 0 16px #328dcc55}.send{background:#17699d;color:white;border-color:#3287b8}.send:hover{background:#2184bd}.send:disabled{opacity:.45;cursor:default}
+    .mobile-drawer{display:none}.settings{position:fixed;inset:0;z-index:20;display:none;place-items:center;padding:20px;background:#020811bb;backdrop-filter:blur(8px)}.settings.open{display:grid}.settings-card{width:min(460px,100%);padding:20px;border:1px solid #265273;border-radius:12px;background:#0b1b2d;box-shadow:0 24px 90px #0009}.settings-card h2{margin:0 0 6px;font-size:18px}.settings-card p{margin:0 0 14px;color:var(--muted);font-size:13px}.settings-card label{display:block;margin-bottom:6px;color:#b9d8ee;font-size:12px}.settings-card input{width:100%;padding:11px;border:1px solid #244865;border-radius:7px;background:#061422;color:var(--text)}.settings-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}.save-setting{min-height:38px;padding:0 13px;background:#17699d;border-color:#3287b8}.cancel-setting{min-height:38px;padding:0 13px}
+    @keyframes float{50%{transform:translateY(-5px)}}
+    @media(max-width:760px){.shell{display:block}.sidebar{position:fixed;inset:0 auto 0 0;width:min(310px,86vw);transform:translateX(-102%);transition:transform .2s ease;box-shadow:20px 0 60px #0008}.sidebar.open{transform:translateX(0)}.mobile-brand{display:flex}.topbar{padding:10px 12px}.content{padding:25px 15px 20px}.welcome{margin-top:3vh}.message{max-width:92%}.composer-wrap{padding-right:12px;padding-left:12px}.mobile-drawer{position:fixed;inset:0;z-index:4;display:none;background:#0008}.mobile-drawer.open{display:block}.status{font-size:11px}}
+    @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar" id="sidebar" aria-label="Chat history">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">B</span><span>BUMBLEBEE</span></div>
+      <button class="new-chat" id="newChat"><span aria-hidden="true">＋</span> New Chat</button>
+      <div class="history-label">RECENT</div>
+      <div class="history-list" id="historyList"></div>
+    </aside>
+    <div class="mobile-drawer" id="drawerBackdrop"></div>
+    <main class="main">
+      <header class="topbar">
+        <button class="icon-button" id="historyToggle" aria-label="Open chat history" title="Chat history">▦</button>
+        <div class="mobile-brand"><span class="brand-mark" style="width:30px;height:30px;font-size:16px">B</span>Bumblebee</div>
+        <span class="top-spacer"></span><span class="status" id="status">READY</span>
+        <button class="icon-button" id="clearChat" aria-label="Clear chat" title="Clear Chat">⌫</button>
+        <button class="icon-button" id="settingsToggle" aria-label="Connection settings" title="Connection settings">⚙</button>
+      </header>
+      <section class="content">
+        <div class="welcome" id="welcome"><div class="orb"><span class="core"></span></div><h1>Bumblebee</h1><p>Ready when you are.</p></div>
+        <div class="messages" id="messages" aria-live="polite"></div>
+      </section>
+      <footer class="composer-wrap">
+        <div class="subtitle" id="subtitle" role="status" aria-live="polite"><span class="subtitle-label">LISTENING</span><span id="subtitleText">Speak naturally. I’ll send when you pause.</span></div>
+        <form class="composer" id="chatForm">
+          <input id="messageInput" type="text" autocomplete="off" placeholder="Message Bumblebee..." aria-label="Message Bumblebee">
+          <button class="mic" id="micButton" type="button" aria-label="Start voice input" title="Voice input">🎙</button>
+          <button class="send" id="sendButton" type="submit" aria-label="Send message">↑</button>
+        </form>
+      </footer>
+    </main>
+  </div>
+  <div class="settings" id="settings" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="settings-card"><h2 id="settingsTitle">Connect Bumblebee</h2><p>Enter the URL of your deployed Bumblebee Next.js API. The Gemini key stays on that server.</p><label for="apiUrl">Chat API URL</label><input id="apiUrl" inputmode="url" placeholder="https://your-app.example/api/chat"><div class="settings-actions"><button class="action cancel-setting" id="cancelSettings" type="button">Cancel</button><button class="save-setting" id="saveSettings" type="button">Save</button></div></div>
+  </div>
+  <script>
+    (() => {
+      const storageKey = "bumblebee.chat-history.v1";
+      const apiStorageKey = "bumblebee.api-url.v1";
+      const welcome = { role: "assistant", content: "Hello. I am Bumblebee. Systems online." };
+      const $ = (id) => document.getElementById(id);
+      const messageList = $("messages");
+      const input = $("messageInput");
+      const status = $("status");
+      const sessions = loadSessions();
+      let activeId = sessions.activeChatId;
+      let busy = false;
+      let recognition = null;
+      let voiceActive = false;
+      let finalSpeech = "";
+      let interimSpeech = "";
+      let speechTimer = null;
+      let longPressTimer = null;
+      let longPressTriggered = false;
+      let apiUrl = localStorage.getItem(apiStorageKey) || (location.protocol === "file:" || location.hostname.endsWith("github.io") ? "" : new URL("/api/chat", location.origin).href);
+      const activeSession = () => sessions.items.find((item) => item.id === activeId);
+
+      function newSession() {
+        const now = new Date().toISOString();
+        return { id: crypto.randomUUID(), title: "New chat", createdAt: now, updatedAt: now, messages: [welcome] };
+      }
+      function loadSessions() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
+          if (saved && Array.isArray(saved.sessions) && saved.sessions.length) {
+            const id = saved.sessions.some((item) => item.id === saved.activeChatId) ? saved.activeChatId : saved.sessions[0].id;
+            return { items: saved.sessions, activeChatId: id };
+          }
+        } catch (error) { console.warn("Could not read chat history", error); }
+        const first = newSession();
+        return { items: [first], activeChatId: first.id };
+      }
+      function persist() {
+        sessions.activeChatId = activeId;
+        localStorage.setItem(storageKey, JSON.stringify({ sessions: sessions.items, activeChatId: activeId }));
+        renderHistory();
+      }
+      function formatTime(value) {
+        return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+      }
+      function appendMessage(role, content, chatId = activeId) {
+        const target = sessions.items.find((item) => item.id === chatId);
+        if (!target) return;
+        target.messages.push({ role, content });
+        target.updatedAt = new Date().toISOString();
+        if (role === "user" && target.title === "New chat") target.title = content.replace(/\s+/g, " ").slice(0, 48);
+        if (chatId === activeId) renderMessages();
+        persist();
+      }
+      function renderMessages() {
+        const chat = activeSession();
+        messageList.replaceChildren();
+        $("welcome").hidden = Boolean(chat?.messages.some((message) => message.role === "user"));
+        for (const message of chat?.messages || []) {
+          const node = document.createElement("article");
+          node.className = `message ${message.role}`;
+          const label = document.createElement("span");
+          label.className = "message-label";
+          label.textContent = message.role === "user" ? "YOU" : "BUMBLEBEE";
+          const content = document.createElement("div");
+          content.textContent = message.content;
+          node.append(label, content);
+          messageList.append(node);
+        }
+        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+      }
+      function renderHistory() {
+        const list = $("historyList");
+        list.replaceChildren();
+        [...sessions.items].filter((chat) => chat.messages.some((item) => item.role === "user"))
+          .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).forEach((chat) => {
+            const button = document.createElement("button");
+            button.className = `history-item${chat.id === activeId ? " active" : ""}`;
+            button.type = "button";
+            const title = document.createElement("span");
+            title.className = "history-title";
+            title.textContent = chat.title;
+            const time = document.createElement("time");
+            time.className = "history-time";
+            time.dateTime = chat.updatedAt;
+            time.textContent = formatTime(chat.updatedAt);
+            button.append(title, time);
+            button.addEventListener("click", () => {
+              if (longPressTriggered) { longPressTriggered = false; return; }
+              activeId = chat.id;
+              renderMessages();
+              persist();
+              closeHistory();
+            });
+            button.addEventListener("pointerdown", () => {
+              clearTimeout(longPressTimer);
+              longPressTriggered = false;
+              longPressTimer = setTimeout(() => {
+                longPressTriggered = true;
+                if (confirm(`Delete “${chat.title}” from history?`)) deleteSession(chat.id);
+              }, 650);
+            });
+            ["pointerup", "pointerleave", "pointercancel"].forEach((event) => button.addEventListener(event, () => clearTimeout(longPressTimer)));
+            button.addEventListener("contextmenu", (event) => {
+              event.preventDefault();
+              longPressTriggered = true;
+              if (confirm(`Delete “${chat.title}” from history?`)) deleteSession(chat.id);
+            });
+            list.append(button);
+          });
+      }
+      function deleteSession(id) {
+        sessions.items = sessions.items.filter((chat) => chat.id !== id);
+        if (!sessions.items.length) sessions.items = [newSession()];
+        if (activeId === id) activeId = sessions.items[0].id;
+        renderMessages();
+        persist();
+      }
+      function startNewChat() {
+        const chat = newSession();
+        sessions.items.unshift(chat);
+        activeId = chat.id;
+        input.value = "";
+        renderMessages();
+        persist();
+        closeHistory();
+      }
+      function clearChat() {
+        const chat = activeSession();
+        if (!chat) return;
+        chat.messages = [];
+        chat.title = "New chat";
+        chat.updatedAt = new Date().toISOString();
+        input.value = "";
+        renderMessages();
+        persist();
+      }
+      function closeHistory() {
+        $("sidebar").classList.remove("open");
+        $("drawerBackdrop").classList.remove("open");
+      }
+      function showStatus(text, isError = false) {
+        status.textContent = text;
+        status.style.color = isError ? "#ff9bae" : "#82badb";
+      }
+      async function sendMessage(text) {
+        const content = text.trim();
+        if (!content || busy) return;
+        busy = true;
+        $("sendButton").disabled = true;
+        showStatus("THINKING");
+        const chatId = activeId;
+        appendMessage("user", content, chatId);
+        input.value = "";
+        try {
+          if (!apiUrl) throw new Error("Add your deployed chat API URL in Connection settings to connect Bumblebee.");
+          const response = await fetch(apiUrl, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: content }) });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || `Chat request failed (${response.status}).`);
+          const target = sessions.items.find((item) => item.id === chatId);
+          if (target) appendMessage("assistant", data.reply || "No response received.", chatId);
+          speak(data.reply || "No response received.");
+          showStatus("READY");
+        } catch (error) {
+          const message = error instanceof Error ? error.message : "Could not reach Bumblebee.";
+          appendMessage("assistant", message, chatId);
+          speak(message);
+          showStatus("CONNECTION ERROR", true);
+        } finally {
+          busy = false;
+          $("sendButton").disabled = false;
+        }
+      }
+      function renderSubtitle(text, visible = true) {
+        $("subtitleText").textContent = text || "Listening. I’ll send when you pause.";
+        $("subtitle").classList.toggle("visible", visible);
+      }
+      function speak(text) {
+        if (!("speechSynthesis" in window) || typeof SpeechSynthesisUtterance === "undefined") return;
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "en-IN";
+        utterance.rate = 0.95;
+        window.speechSynthesis.speak(utterance);
+      }
+      function stopVoice(send = true) {
+        if (speechTimer) clearTimeout(speechTimer);
+        voiceActive = false;
+        $("micButton").classList.remove("active");
+        $("micButton").setAttribute("aria-label", "Start voice input");
+        if (recognition) {
+          recognition.stop();
+        } else {
+          const text = [finalSpeech, interimSpeech].filter(Boolean).join(" ").trim();
+          finalSpeech = "";
+          interimSpeech = "";
+          renderSubtitle("", false);
+          if (send && text) void sendMessage(text);
+        }
+      }
+      function startVoice() {
+        const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!Speech) { renderSubtitle("Speech recognition is unavailable in this browser."); return; }
+        voiceActive = true;
+        finalSpeech = "";
+        interimSpeech = "";
+        recognition = new Speech();
+        recognition.lang = "en-IN";
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.onstart = () => { $("micButton").classList.add("active"); renderSubtitle("Listening. I’ll send when you pause."); showStatus("LISTENING"); };
+        recognition.onresult = (event) => {
+          const interim = [];
+          let hasFinal = false;
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const phrase = event.results[i][0].transcript.trim();
+            if (!phrase) continue;
+            if (event.results[i].isFinal) { finalSpeech = [finalSpeech, phrase].filter(Boolean).join(" "); hasFinal = true; }
+            else interim.push(phrase);
+          }
+          interimSpeech = interim.join(" ");
+          renderSubtitle([finalSpeech, interimSpeech].filter(Boolean).join(" "));
+          if (hasFinal) {
+            clearTimeout(speechTimer);
+            speechTimer = setTimeout(() => stopVoice(true), 850);
+          }
+        };
+        recognition.onerror = (event) => {
+          if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+            voiceActive = false;
+            showStatus("MIC PERMISSION NEEDED", true);
+            renderSubtitle("Allow microphone access in browser settings, then try again.");
+          }
+        };
+        recognition.onend = () => {
+          const instance = recognition;
+          recognition = null;
+          const text = [finalSpeech, interimSpeech].filter(Boolean).join(" ").trim();
+          if (text && (voiceActive || !voiceActive)) {
+            finalSpeech = "";
+            interimSpeech = "";
+            renderSubtitle("", false);
+            voiceActive = false;
+            $("micButton").classList.remove("active");
+            showStatus("THINKING");
+            void sendMessage(text);
+          } else if (voiceActive && instance) {
+            setTimeout(startVoice, 250);
+          } else {
+            renderSubtitle("", false);
+            $("micButton").classList.remove("active");
+          }
+        };
+        try { recognition.start(); }
+        catch (error) { voiceActive = false; renderSubtitle("Could not start the microphone. Check browser permission."); showStatus("MIC ERROR", true); }
+      }
+
+      $("newChat").addEventListener("click", startNewChat);
+      $("clearChat").addEventListener("click", clearChat);
+      $("chatForm").addEventListener("submit", (event) => { event.preventDefault(); void sendMessage(input.value); });
+      $("micButton").addEventListener("click", () => voiceActive ? stopVoice(true) : startVoice());
+      $("historyToggle").addEventListener("click", () => { $("sidebar").classList.toggle("open"); $("drawerBackdrop").classList.toggle("open"); });
+      $("drawerBackdrop").addEventListener("click", closeHistory);
+      $("settingsToggle").addEventListener("click", () => { $("apiUrl").value = apiUrl; $("settings").classList.add("open"); });
+      $("cancelSettings").addEventListener("click", () => $("settings").classList.remove("open"));
+      $("saveSettings").addEventListener("click", () => {
+        apiUrl = $("apiUrl").value.trim();
+        if (apiUrl && !/^https?:\/\//i.test(apiUrl)) { showStatus("API URL MUST START WITH HTTP(S)", true); return; }
+        localStorage.setItem(apiStorageKey, apiUrl);
+        $("settings").classList.remove("open");
+        showStatus(apiUrl ? "API CONNECTED" : "API NOT CONFIGURED", !apiUrl);
+      });
+      renderMessages();
+      persist();
+      if (!apiUrl) showStatus("SET API URL", true);
+      if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("./service-worker.js").catch((error) => console.warn("Offline shell unavailable", error));
+    })();
+  </script>
+</body>
+</html>
