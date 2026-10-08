@@ -6,12 +6,12 @@ An Iron Man–inspired holographic orb built with **Next.js**, **Three.js**, and
 
 ![Bumblebee orb UI](logo.png)
 
-[preview1](p1.png)
-[preview2](p2.png)
-[preview3](p2.1.png)
-[preview4](p4.png)
-[preview5](p3.png)
-[preview6](p5.png)
+![preview1](p1.png)
+![preview2](p2.png)
+![preview3](p2.1.png)
+![preview4](p4.png)
+![preview5](p3.png)
+![preview6](p5.png)
 
 ## Getting started
 
