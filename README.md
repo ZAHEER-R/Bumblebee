@@ -4,9 +4,14 @@ An Iron Man–inspired holographic orb built with **Next.js**, **Three.js**, and
 
 > This is the open-source interface of [the original ULTRON project](https://github.com/ZAHEER-R/ultron), rebranded as Bumblebee for this workspace.
 
-![Bumblebee orb UI](docs/screenshot.png)
+![Bumblebee orb UI](logo.png)
 
-https://github.com/user-attachments/assets/91578a83-9a27-44e8-84b0-96defcfd7366
+[preview1](p1.png)
+[preview2](p2.png)
+[preview3](p2.1.png)
+[preview4](p4.png)
+[preview5](p3.png)
+[preview6](p5.png)
 
 ## Getting started
 
