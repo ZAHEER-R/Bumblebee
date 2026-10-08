@@ -110,8 +110,9 @@ Respond naturally.
 
 `;
 
-const reply =
+const result =
 await askGemini(prompt);
+const reply = result.reply;
 
 saveMessage(
 "assistant",

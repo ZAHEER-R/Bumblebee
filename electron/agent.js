@@ -7,15 +7,9 @@ const path = require("node:path");
 const { promisify } = require("node:util");
 const { closeApp, launchApp, setClockAlarm, typeInNotepad } = require("./commands/appLauncher");
 const aliases = require("./services/aliases");
+const MODELS = require("../core/models.json");
 
 const execFileAsync = promisify(execFile);
-const MODELS = [
-  "gemini-3.6-flash",
-  "gemini-3.5-flash",
-  "gemini-3.8-flash",
-  "gemini-3.7-flash",
-  "gemini-3.1-flash-lite",
-];
 let modelIndex = 0;
 let history = [];
 
@@ -360,4 +354,15 @@ function getActiveModel() {
   return MODELS[modelIndex];
 }
 
-module.exports = { getActiveModel, processMessage };
+function getAvailableModels() {
+  return [...MODELS];
+}
+
+function setActiveModel(modelName) {
+  const index = MODELS.indexOf(modelName);
+  if (index === -1) throw new Error(`Unsupported Gemini model: ${modelName}`);
+  modelIndex = index;
+  return getActiveModel();
+}
+
+module.exports = { getActiveModel, getAvailableModels, processMessage, setActiveModel };

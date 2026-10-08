@@ -28,6 +28,10 @@ contextBridge.exposeInMainWorld("ultron", {
 
     getModel: () => ipcRenderer.invoke("agent:model"),
 
+    getModels: () => ipcRenderer.invoke("agent:models"),
+
+    setModel: (model) => ipcRenderer.invoke("agent:set-model", model),
+
 });
 
 /*

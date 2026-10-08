@@ -20,6 +20,10 @@ declare global {
 
       getModel(): Promise<string>;
 
+      getModels(): Promise<string[]>;
+
+      setModel(model: string): Promise<string>;
+
       openApp(app: string): Promise<DesktopActionResult>;
 
       closeApp(app: string): Promise<DesktopActionResult>;

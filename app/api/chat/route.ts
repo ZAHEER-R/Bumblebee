@@ -51,13 +51,20 @@ const message =
   typeof body.message === "string"
     ? body.message.trim()
     : "";
+const model =
+  typeof body === "object" &&
+  body !== null &&
+  "model" in body &&
+  typeof body.model === "string"
+    ? body.model
+    : undefined;
 
 if (!message) {
   return jsonResponse(req, { error: "Please enter a message." }, 400);
 }
 
-const reply = await askGemini(message);
-return jsonResponse(req, { reply });
+const result = await askGemini(message, model);
+return jsonResponse(req, result);
 }
 catch(error){
   console.error("BUMBLEBEE REQUEST ERROR:", error);

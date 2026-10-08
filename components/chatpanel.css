@@ -797,6 +797,8 @@ color:#00ffff;
 }
 
 .ultron-chat .chat-header {
+  position: relative;
+  z-index: 2;
   flex-shrink: 0;
   gap: 10px;
   padding: 0 14px;
@@ -809,9 +811,89 @@ color:#00ffff;
 .ultron-chat .header-title {
   flex: 1;
   min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.model-picker-toggle {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 5px;
+  overflow: hidden;
+  border: 1px solid rgba(83, 174, 238, 0.28);
+  border-radius: 5px;
+  background: rgba(16, 49, 79, 0.55);
+  color: #c4e8ff;
+  cursor: pointer;
+  font: inherit;
+  letter-spacing: 0;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.model-picker-toggle:hover,
+.model-picker-toggle[aria-expanded="true"] {
+  border-color: rgba(98, 200, 255, 0.75);
+  background: rgba(28, 94, 145, 0.65);
+  color: white;
+}
+
+.model-picker-menu {
+  position: absolute;
+  top: calc(100% + 5px);
+  right: 42px;
+  z-index: 10;
+  width: min(230px, calc(100vw - 72px));
+  max-height: 210px;
+  overflow-y: auto;
+  padding: 7px;
+  border: 1px solid rgba(83, 174, 238, 0.42);
+  border-radius: 8px;
+  background: rgba(5, 18, 34, 0.98);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 18px rgba(22, 111, 184, 0.18);
+  scrollbar-color: #3c9bd1 rgba(7, 20, 34, 0.45);
+  scrollbar-width: thin;
+}
+
+.model-picker-heading {
+  padding: 5px 8px 7px;
+  color: #7fb7dc;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+}
+
+.model-picker-option {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #bdddf3;
+  cursor: pointer;
+  font: 11px "Courier New", monospace;
+  text-align: left;
+}
+
+.model-picker-option:hover,
+.model-picker-option.selected {
+  background: rgba(28, 94, 145, 0.58);
+  color: white;
+}
+
+.model-picker-error {
+  margin: 5px 8px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  color: #ff9b9b;
+  font-size: 10px;
 }
 
 .ultron-chat .status-dot {
@@ -856,10 +938,22 @@ color:#00ffff;
 
 .ultron-chat .chat-messages {
   min-height: 0;
+  min-width: 0;
+  overflow-x: hidden;
 }
 
 .ultron-chat .message {
+  box-sizing: border-box;
+  max-width: 100%;
+  min-width: 0;
   border-radius: 8px;
+}
+
+.ultron-chat .ai-text {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: pre-wrap;
 }
 
 .ultron-chat .message span {
@@ -1039,6 +1133,7 @@ color:#00ffff;
 
 .chat-actions button:hover,
 .chat-actions button.selected,
+.chat-actions .voice-mode-toggle:hover,
 .history-toggle:hover,
 .history-toggle.selected {
   border-color: rgba(98, 200, 255, 0.7);
@@ -1050,6 +1145,13 @@ color:#00ffff;
   flex: 0 0 30px;
   width: 30px;
   height: 30px;
+}
+
+.chat-actions .voice-mode-toggle {
+  flex: 0 0 52px;
+  border-color: rgba(98, 200, 255, 0.42);
+  color: #8fd7ff;
+  font-weight: 700;
 }
 
 .chat-history {
@@ -1127,6 +1229,7 @@ color:#00ffff;
 .tool-catalog {
   scrollbar-color: #3c9bd1 rgba(7, 20, 34, 0.45);
   scrollbar-width: thin;
+  scrollbar-gutter: stable;
 }
 
 .chat-messages::-webkit-scrollbar,

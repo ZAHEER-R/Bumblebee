@@ -8,7 +8,7 @@ console.log("==================================");
 const { app, BrowserWindow, ipcMain, Menu, nativeImage, globalShortcut, Tray, session } = require("electron");
 const path = require("path");
 require("@next/env").loadEnvConfig(path.join(__dirname, ".."));
-const { getActiveModel, processMessage } = require("./agent");
+const { getActiveModel, getAvailableModels, processMessage, setActiveModel } = require("./agent");
 const aliases = require("./services/aliases");
 const { getInstalledApps } = require("./services/appScanner");
 const { setApps } = require("./services/appCache");
@@ -67,6 +67,11 @@ ipcMain.handle("agent:chat", async (_, message) => {
 });
 
 ipcMain.handle("agent:model", () => getActiveModel());
+ipcMain.handle("agent:models", () => getAvailableModels());
+ipcMain.handle("agent:set-model", (_, modelName) => {
+    if (typeof modelName !== "string") throw new Error("Choose a valid Gemini model.");
+    return setActiveModel(modelName);
+});
 
 ipcMain.handle("app:open", async (_, appName) => {
     if (typeof appName !== "string" || !appName.trim()) {

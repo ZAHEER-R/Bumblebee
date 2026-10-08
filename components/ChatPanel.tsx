@@ -5,8 +5,9 @@ import {
 } from "@/lib/voice/commands";
 import { useEffect, useRef, useState } from "react";
 import { ChatMessage } from "@/core/types";
-import { Eraser, LayoutGrid, Plus, Wrench } from "lucide-react";
+import { ChevronDown, Eraser, LayoutGrid, Plus, Wrench } from "lucide-react";
 import { detectWakeWord, stripWakeWord } from "@/lib/voice/wakeword";
+import { GEMINI_MODELS } from "@/core/models";
 
 import {
   startListening,
@@ -20,7 +21,9 @@ setUltronStatus
 import {
   speak,
   stopSpeaking,
+  unlockSpeech,
 } from "@/lib/voice/tts";
+import type { VoiceMode } from "@/lib/voice/tts";
 
 import {
 formatAIResponse
@@ -82,12 +85,33 @@ export default function ChatPanel() {
   const [transcript, setTranscript] = useState("");
 
   const [listening, setListening] = useState(false);
-  const [activeModel, setActiveModel] = useState("Gemini agent");
+  const [activeModel, setActiveModel] = useState(GEMINI_MODELS[0]);
+  const [showModelMenu, setShowModelMenu] = useState(false);
+  const [modelError, setModelError] = useState("");
+  const [voiceMode, setVoiceMode] = useState<VoiceMode>("adam");
 
   useEffect(() => {
-    if (window.ultron) {
-      window.ultron.getModel().then(setActiveModel).catch(() => undefined);
+    const savedModel = window.localStorage.getItem("bumblebee.gemini-model");
+    const preferredModel = savedModel && GEMINI_MODELS.includes(savedModel)
+      ? savedModel
+      : GEMINI_MODELS[0];
+    const savedVoice = window.localStorage.getItem("bumblebee.voice-mode");
+    if (savedVoice === "adam" || savedVoice === "eve") setVoiceMode(savedVoice);
+
+    if (!window.ultron) {
+      setActiveModel(preferredModel);
+      return;
     }
+
+    const applyModel = savedModel && GEMINI_MODELS.includes(savedModel)
+      ? window.ultron.setModel(preferredModel)
+      : window.ultron.getModel();
+    applyModel
+      .then(setActiveModel)
+      .catch((error: unknown) => {
+        console.error("Unable to load Bumblebee model settings:", error);
+        setModelError("Could not load the selected Gemini model.");
+      });
   }, []);
 
   useEffect(() => {
@@ -197,19 +221,42 @@ export default function ChatPanel() {
   }
 
   function speakReply(text: string) {
-    speak(text);
+    speak(text, undefined, (message) => {
+      appendChatMessage(activeChatId, { role: "assistant", content: message });
+    }, voiceMode);
+  }
+
+  async function selectModel(model: string) {
+    setModelError("");
+    try {
+      const selectedModel = window.ultron
+        ? await window.ultron.setModel(model)
+        : model;
+      setActiveModel(selectedModel);
+      window.localStorage.setItem("bumblebee.gemini-model", selectedModel);
+      setShowModelMenu(false);
+    } catch (error) {
+      console.error("Unable to switch Gemini model:", error);
+      setModelError("Could not switch models. Please try again.");
+    }
+  }
+
+  function toggleVoiceMode() {
+    const nextMode = voiceMode === "adam" ? "eve" : "adam";
+    setVoiceMode(nextMode);
+    window.localStorage.setItem("bumblebee.voice-mode", nextMode);
   }
 
   async function processMessage(message: string) {
     const chatId = activeChatId;
     if (!chatId) return;
+    unlockSpeech();
     const request = stripWakeWord(message);
     if (!request) {
       if (detectWakeWord(message)) {
         const reply = "I'm here. What can I do for you?";
         appendChatMessage(chatId, { role: "assistant", content: reply });
         speakReply(reply);
-        setUltronStatus("READY");
       }
       return;
     }
@@ -239,8 +286,7 @@ if(command.action==="STOP_LISTENING"){
 
     setListening(false);
 
-    speak("Bumblebee voice access disabled.");
-    setUltronStatus("READY");
+    speakReply("Bumblebee voice access disabled.");
 
     return;
 
@@ -250,7 +296,6 @@ if(command.action==="STOP_LISTENING"){
   if(command.action==="CLEAR_CHAT"){
 
     clearCurrentChat();
-    setUltronStatus("READY");
 
     return;
 
@@ -285,30 +330,31 @@ if(command.action==="STOP_LISTENING"){
         reply = data.reply;
         usedTools = data.tools;
         setActiveModel(data.model);
+        window.localStorage.setItem("bumblebee.gemini-model", data.model);
       } else {
         const res = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: request }),
+          body: JSON.stringify({ message: request, model: activeModel }),
         });
-        const data: { reply?: string; error?: string } = await res.json();
+        const data: { reply?: string; error?: string; model?: string } = await res.json();
         if (!res.ok) {
           throw new Error(typeof data.error === "string" ? data.error : `AI request failed (${res.status}).`);
         }
         reply = data.reply ?? data.error ?? "Bumblebee connection failed.";
+        if (typeof data.model === "string") {
+          setActiveModel(data.model);
+          window.localStorage.setItem("bumblebee.gemini-model", data.model);
+        }
       }
       const formattedReply = formatAIResponse(reply);
-      setUltronStatus(
-      "SPEAKING"
-      ); 
       appendChatMessage(chatId, {
         role: "assistant",
         content: usedTools.length
           ? `${formattedReply}\nTools: ${usedTools.join(" → ")}`
           : formattedReply,
       });
-
-      setUltronStatus("READY");
+      speakReply(formattedReply);
     }
 
     catch(error){
@@ -320,7 +366,6 @@ if(command.action==="STOP_LISTENING"){
 
       appendChatMessage(chatId, { role: "assistant", content: errorMessage });
       speakReply(errorMessage);
-      setUltronStatus("READY");
 
     }
 
@@ -329,6 +374,7 @@ if(command.action==="STOP_LISTENING"){
   async function sendMessage(){
     const message = input.trim();
     if (!message) return;
+    unlockSpeech();
     setInput("");
     await processMessage(message);
   }
@@ -395,14 +441,40 @@ function toggleVoiceCapture() {
     <div className="ultron-chat">
 
       <div className="chat-header">
-
         <div className="header-title">
-
           <span className="status-dot"></span>
-
-          BUMBLEBEE AI · {activeModel}
-
+          <span>BUMBLEBEE AI</span>
+          <button
+            type="button"
+            className="model-picker-toggle"
+            aria-expanded={showModelMenu}
+            aria-haspopup="listbox"
+            onClick={() => setShowModelMenu((visible) => !visible)}
+            title="Choose Gemini model"
+          >
+            {activeModel}
+            <ChevronDown size={13} aria-hidden="true" />
+          </button>
         </div>
+
+        {showModelMenu && (
+          <div className="model-picker-menu" role="listbox" aria-label="Gemini models">
+            <div className="model-picker-heading">SELECT MODEL</div>
+            {GEMINI_MODELS.map((model) => (
+              <button
+                type="button"
+                role="option"
+                aria-selected={activeModel === model}
+                className={`model-picker-option${activeModel === model ? " selected" : ""}`}
+                key={model}
+                onClick={() => void selectModel(model)}
+              >
+                {model}
+              </button>
+            ))}
+            {modelError && <p className="model-picker-error" role="alert">{modelError}</p>}
+          </div>
+        )}
 
         <button
           type="button"
@@ -450,6 +522,9 @@ function toggleVoiceCapture() {
           title="Show desktop commands"
         >
           <Wrench size={15} aria-hidden="true" /> Tools
+        </button>
+        <button type="button" className="voice-mode-toggle" onClick={toggleVoiceMode} title="Switch spoken voice">
+          {voiceMode === "adam" ? "ADAM" : "EVE"}
         </button>
       </div>
 

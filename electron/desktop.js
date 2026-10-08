@@ -69,7 +69,9 @@ process.on("SIGTERM", () => stopProcesses(0));
 async function startDesktop() {
   if (!(await isServerReady())) {
     const port = parsedAppUrl.port || (parsedAppUrl.protocol === "https:" ? "443" : "3000");
-    nextProcess = spawn(process.execPath, [nextCli, "dev", "--hostname", parsedAppUrl.hostname, "--port", port], {
+    const nextArgs = ["dev", "--hostname", parsedAppUrl.hostname, "--port", port];
+    if (process.platform === "win32") nextArgs.push("--webpack");
+    nextProcess = spawn(process.execPath, [nextCli, ...nextArgs], {
       cwd: path.join(__dirname, ".."),
       env: process.env,
       stdio: "inherit",

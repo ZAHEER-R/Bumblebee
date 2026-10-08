@@ -1,12 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const MODELS = [
-  "gemini-3.8-flash",
-  "gemini-3.7-flash",
-  "gemini-3.6-flash",
-  "gemini-3.5-flash",
-  "gemini-3.1-flash-lite",
-];
+import { GEMINI_MODELS } from "./models";
 
 function shouldRotateModel(error: unknown) {
   if (typeof error !== "object" || error === null) return /429|404|5\d\d|quota|rate.?limit|resource.?exhausted|not found/i.test(String(error));
@@ -17,7 +10,7 @@ function shouldRotateModel(error: unknown) {
     /quota|rate.?limit|resource.?exhausted|not found|model.*(?:unavailable|unsupported|not found)/i.test(message);
 }
 
-export async function askGemini(message: string) {
+export async function askGemini(message: string, preferredModel?: string) {
   const apiKey = process.env.GEMINI_API_KEY?.trim();
   if (
     !apiKey ||
@@ -34,13 +27,17 @@ This request is running in browser-only mode and cannot access Windows applicati
 User: ${message}`;
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  for (const [index, modelName] of MODELS.entries()) {
+  const preferredIndex = preferredModel ? GEMINI_MODELS.indexOf(preferredModel) : -1;
+  const startingIndex = preferredIndex >= 0 ? preferredIndex : 0;
+  for (let attempt = 0; attempt < GEMINI_MODELS.length; attempt++) {
+    const modelIndex = (startingIndex + attempt) % GEMINI_MODELS.length;
+    const modelName = GEMINI_MODELS[modelIndex];
     try {
       const model = genAI.getGenerativeModel({ model: modelName });
       const result = await model.generateContent(prompt);
-      return result.response.text();
+      return { reply: result.response.text(), model: modelName };
     } catch (error) {
-      if (!shouldRotateModel(error) || index === MODELS.length - 1) {
+      if (!shouldRotateModel(error) || attempt === GEMINI_MODELS.length - 1) {
         console.error(`Gemini generation failed using ${modelName}:`, error);
         if (error instanceof Error) {
           throw new Error(`Gemini request failed: ${error.message}`);
@@ -48,7 +45,7 @@ User: ${message}`;
         throw new Error("Gemini request failed. Check the server log for details.");
       }
 
-      console.warn(`Gemini model ${modelName} is temporarily unavailable; trying ${MODELS[index + 1]}.`);
+      console.warn(`Gemini model ${modelName} is temporarily unavailable; trying ${GEMINI_MODELS[(modelIndex + 1) % GEMINI_MODELS.length]}.`);
     }
   }
 
